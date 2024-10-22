@@ -1,7 +1,7 @@
 # Usage
 When you run the **loadstring**, an interface shows up that tracks when your LocalPlayer interacts with **`ClickDetector`**, **`ProximityPrompt`**, or **`TouchTransmitter`** objects in the game. The button flashes red when your player is detected.
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Entitynt/Roblox-Fly-Script/refs/heads/main/FlyCommand.lua", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Entitynt/Roblox-Clickable-Objects-Explorer/refs/heads/main/Main.lua", true))()
 ```
 
 # Code Explain
