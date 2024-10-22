@@ -8,7 +8,8 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/Entitynt/Roblox-Fly-S
 This script is pretty basic. It scans the game for objects like **`ClickDetector`**, **`ProximityPrompt`**, and **`TouchTransmitter`** and alerts you when your LocalPlayer is detected interacting with them. The interface isn't anything special since I'm not too focused on UI design.
 
 # Video
-https://www.youtube.com/watch?v=G18XOOPgZpc
+https://streamable.com/r7o4rq
+https://streamable.com/tdhm4j
 
 # Credits
 If you wanna get inspiration on the project just give me a credits 😊
