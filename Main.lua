@@ -129,7 +129,6 @@ local function getFullPath(object)
 
     return fullPath
 end
-
 local function createTween(button, color1, color2)
     local tweenIn = TweenService:Create(button, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), color1)
     local tweenOut = TweenService:Create(button, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), color2)
@@ -140,9 +139,9 @@ local function createTween(button, color1, color2)
     end)
 end
 
-local function addClickableObject(object)
+local function addClickableObject(object) --Added Optimization Thanks for microwave.xyz
     local fullPath = getFullPath(object)
-    if buttons[fullPath] then return end --We dont care already added Objects
+    if buttons[fullPath] then return end -- We don't care already added Objects
 
     local newButton = TextButtonTemplate:Clone()
     newButton.Parent = ScrollingFrame
@@ -150,25 +149,57 @@ local function addClickableObject(object)
 
     buttons[fullPath], addedObjects[fullPath] = newButton, true
 
+    -- Table to store connections for this object
+    local connections = {}
+
     newButton.MouseButton1Click:Connect(function() 
         setclipboard(fullPath) 
         createTween(newButton, {BackgroundColor3 = Color3.fromRGB(60, 60, 60)}, {BackgroundColor3 = Color3.fromRGB(50, 50, 50)})
     end)
 
-    local tweenSequence = function(color1, color2)
+    local function tweenSequence(color1, color2)
         createTween(newButton, color1, color2)
     end
 
     if object:IsA("ClickDetector") then
-        object.MouseClick:Connect(function(player) if player == LocalPlayer then tweenSequence({BackgroundColor3 = Color3.fromRGB(255, 0, 0)}, {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}) end end)
-    elseif object:IsA("ProximityPrompt") then
-        object.Triggered:Connect(function(player) if player == LocalPlayer then tweenSequence({BackgroundColor3 = Color3.fromRGB(255, 0, 0)}, {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}) end end)
-    elseif object:IsA("TouchTransmitter") then
-        object.Parent.Touched:Connect(function(hit)
-            local player = Players:GetPlayerFromCharacter(hit.Parent)
-            if player and player == LocalPlayer then tweenSequence({BackgroundColor3 = Color3.fromRGB(255, 0, 0)}, {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}) end
+        -- Store the connection in the connections table
+        connections[#connections + 1] = object.MouseClick:Connect(function(player)
+            if player == LocalPlayer then
+                tweenSequence({BackgroundColor3 = Color3.fromRGB(255, 0, 0)}, {BackgroundColor3 = Color3.fromRGB(50, 50, 50)})
+            end
         end)
+    elseif object:IsA("ProximityPrompt") then
+        connections[#connections + 1] = object.Triggered:Connect(function(player)
+            if player == LocalPlayer then
+                tweenSequence({BackgroundColor3 = Color3.fromRGB(255, 0, 0)}, {BackgroundColor3 = Color3.fromRGB(50, 50, 50)})
+            end
+        end)
+    elseif object:IsA("TouchTransmitter") then
+        -- Ensure the parent is a BasePart
+        if object.Parent:IsA("BasePart") then
+            connections[#connections + 1] = object.Parent.Touched:Connect(function(hit)
+                local player = Players:GetPlayerFromCharacter(hit.Parent)
+                if player and player == LocalPlayer then
+                    tweenSequence({BackgroundColor3 = Color3.fromRGB(255, 0, 0)}, {BackgroundColor3 = Color3.fromRGB(50, 50, 50)})
+                end
+            end)
+        end
     end
+
+    -- Detect when the object is removed from the game
+    connections[#connections + 1] = object.AncestryChanged:Connect(function(child, parent)
+        if not parent then
+            -- Object was removed from the game
+            -- Disconnect all associated connections
+            for _, conn in ipairs(connections) do
+                conn:Disconnect()
+            end
+            -- Clean up the GUI and tables
+            newButton:Destroy()
+            buttons[fullPath] = nil
+            addedObjects[fullPath] = nil
+        end
+    end)
 end
 
 SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
